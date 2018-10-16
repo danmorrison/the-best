@@ -9,11 +9,12 @@
 import UIKit
 import MediaPlayer
 
-class ViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource {
-
+class ViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource, UITableViewDelegate, UITableViewDataSource {
     var library = MPMediaQuery()
     var years: Set<Int> = []
     let calendar = Calendar.current
+    var yearPickerData = [Int]()
+    var myBestAlbums = Set<UInt64>()
     
     @IBOutlet weak var yearPicker: UIPickerView!
 
@@ -29,25 +30,46 @@ class ViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSo
         return NSAttributedString(string: String(yearPickerData[row]))
     }
     
-    var yearPickerData: [Int] = [Int]()
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 1
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        return UITableViewCell()
+    }
+    
+    func refreshLibrary() {
+        library = MPMediaQuery.playlists()
+        
+        for playlist in library.collections! {
+            if (playlist.value(forProperty: MPMediaPlaylistPropertyName) as! String).range(of: "^The Best ", options: .regularExpression) != nil {
+                for song in playlist.items {
+                    myBestAlbums.insert(song.albumPersistentID)
+                }
+            }
+        }
+        
+        library = MPMediaQuery.albums()
+        
+        for album in library.collections! {
+            if !myBestAlbums.contains(album.items[0].albumPersistentID) {
+                if album.items[0].releaseDate != nil {
+                    years.insert(calendar.component(.year, from: album.items[0].releaseDate!))
+                }
+            }
+        }
+        
+        yearPickerData = years.sorted(by: >)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
 
-        self.yearPicker.delegate = self
-        self.yearPicker.dataSource = self
+        yearPicker.delegate = self
+        yearPicker.dataSource = self
 
-        library = MPMediaQuery.albums()
-        library.groupingType = MPMediaGrouping.album
-        
-        for item in library.items! {
-            if item.releaseDate != nil {
-                years.insert(calendar.component(.year, from: item.releaseDate!))
-            }
-        }
-        
-        self.yearPickerData = years.sorted(by: >)
+        refreshLibrary()
     }
 
 }
