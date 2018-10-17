@@ -31,6 +31,7 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
+                        <outlet property="albumTable" destination="66T-6j-zqn" id="p7U-Tg-cTx"/>
                         <outlet property="yearPicker" destination="43q-Zt-61U" id="GuO-pO-UwJ"/>
                     </connections>
                 </viewController>
