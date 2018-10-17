@@ -9,38 +9,29 @@
 import UIKit
 import MediaPlayer
 
-class ViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource, UITableViewDelegate, UITableViewDataSource {
+class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     var library = MPMediaQuery()
     let calendar = Calendar.current
     var myBestAlbums = Set<UInt64>()
     var theOtherAlbumsByYear = [(key: Int, value: [String])]()
     
-    @IBOutlet weak var yearPicker: UIPickerView!
     @IBOutlet weak var albumTable: UITableView!
     
-    func numberOfComponents(in pickerView: UIPickerView) -> Int {
-        return 1
-    }
-    
-    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int{
         return theOtherAlbumsByYear.count
     }
     
-    func pickerView(_ pickerView: UIPickerView, attributedTitleForRow row: Int, forComponent component: Int) -> NSAttributedString? {
-        return NSAttributedString(string: String(theOtherAlbumsByYear[row].key))
-    }
-    
-    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        albumTable.reloadData()
-    }
-    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return theOtherAlbumsByYear[yearPicker.selectedRow(inComponent: 0)].value.count
+        return theOtherAlbumsByYear[section].value.count
+    }
+    
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return String(theOtherAlbumsByYear[section].key)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell()
-        cell.textLabel?.text = theOtherAlbumsByYear[yearPicker.selectedRow(inComponent: 0)].value[indexPath.row]
+        cell.textLabel?.text = theOtherAlbumsByYear[indexPath.section].value[indexPath.row]
         return cell
     }
     
@@ -76,9 +67,6 @@ class ViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSo
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-
-        yearPicker.delegate = self
-        yearPicker.dataSource = self
         
         albumTable.delegate = self
         albumTable.dataSource = self
