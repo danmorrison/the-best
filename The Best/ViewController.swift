@@ -13,7 +13,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     var library = MPMediaQuery()
     let calendar = Calendar.current
     var myBestAlbums = Set<UInt64>()
-    var theOtherAlbumsByYear = [(key: Int, value: [String])]()
+    var theOtherAlbumsByYear = [(key: Int, value: [MPMediaItemCollection])]()
     
     @IBOutlet weak var albumTable: UITableView!
     
@@ -31,7 +31,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell") ?? UITableViewCell()
-        cell.textLabel?.text = theOtherAlbumsByYear[indexPath.section].value[indexPath.row]
+        cell.textLabel?.text = theOtherAlbumsByYear[indexPath.section].value[indexPath.row].items[0].albumTitle ?? "Title"
         return cell
     }
     
@@ -48,7 +48,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
         // Which albums aren't the best?
         library = MPMediaQuery.albums()
-        var theOtherAlbums = Dictionary<Int, [String]>()
+        var theOtherAlbums = Dictionary<Int, [MPMediaItemCollection]>()
         for album in library.collections! {
             if !myBestAlbums.contains(album.items[0].albumPersistentID) {
                 if album.items[0].releaseDate != nil {
@@ -56,7 +56,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                     if !theOtherAlbums.keys.contains(year) {
                         theOtherAlbums[year] = []
                     }
-                    theOtherAlbums[year]!.append(album.items[0].albumTitle ?? "Title")
+                    theOtherAlbums[year]!.append(album)
                 }
             }
         }
