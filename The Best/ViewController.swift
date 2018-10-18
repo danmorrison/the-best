@@ -14,6 +14,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     let calendar = Calendar.current
     var myBestAlbums = Set<UInt64>()
     var theOtherAlbumsByYear = [(key: Int, value: [MPMediaItemCollection])]()
+    let musicPlayer = MPMusicPlayerController.systemMusicPlayer
     
     @IBOutlet weak var albumTable: UITableView!
     
@@ -39,7 +40,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
     {
-      print("*")
+        musicPlayer.setQueue(with: theOtherAlbumsByYear[indexPath.section].value[indexPath.row])
+        musicPlayer.play()
     }
     
     func refreshLibrary() {
