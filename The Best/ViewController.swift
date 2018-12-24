@@ -32,9 +32,11 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell") ?? UITableViewCell(style: UITableViewCell.CellStyle.subtitle, reuseIdentifier: "cell")
-        cell.textLabel?.text = theOtherAlbumsByYear[indexPath.section].value[indexPath.row].items[0].albumTitle ?? "Title"
-        cell.detailTextLabel?.text = theOtherAlbumsByYear[indexPath.section].value[indexPath.row].items[0].albumArtist ?? "Artist"
-        cell.imageView?.image = theOtherAlbumsByYear[indexPath.section].value[indexPath.row].items[0].artwork?.image(at: CGSize(width: 44, height: 44))
+        if theOtherAlbumsByYear[indexPath.section].value[indexPath.row].items.count > 0 {
+            cell.textLabel?.text = theOtherAlbumsByYear[indexPath.section].value[indexPath.row].items[0].albumTitle ?? "Title"
+            cell.detailTextLabel?.text = theOtherAlbumsByYear[indexPath.section].value[indexPath.row].items[0].albumArtist ?? "Artist"
+            cell.imageView?.image = theOtherAlbumsByYear[indexPath.section].value[indexPath.row].items[0].artwork?.image(at: CGSize(width: 44, height: 44))
+        }
         return cell
     }
     
