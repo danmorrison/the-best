@@ -23,7 +23,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return theOtherAlbumsByYear[section].value.count
+        // Add one row for summarising the year
+        return theOtherAlbumsByYear[section].value.count + 1
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -31,19 +32,33 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell") ?? UITableViewCell(style: UITableViewCell.CellStyle.subtitle, reuseIdentifier: "cell")
-        if theOtherAlbumsByYear[indexPath.section].value[indexPath.row].items.count > 0 {
-            cell.textLabel?.text = theOtherAlbumsByYear[indexPath.section].value[indexPath.row].items[0].albumTitle ?? "Title"
-            cell.detailTextLabel?.text = theOtherAlbumsByYear[indexPath.section].value[indexPath.row].items[0].albumArtist ?? "Artist"
-            cell.imageView?.image = theOtherAlbumsByYear[indexPath.section].value[indexPath.row].items[0].artwork?.image(at: CGSize(width: 44, height: 44))
+        if theOtherAlbumsByYear[indexPath.section].value.count == indexPath.row {
+            // Return a cell summarising the number of albums in the year
+            let cell = tableView.dequeueReusableCell(withIdentifier: "summary") ?? UITableViewCell(style: UITableViewCell.CellStyle.default, reuseIdentifier: "summary")
+            cell.textLabel?.text = String(theOtherAlbumsByYear[indexPath.section].value.count) + " albums"
+            cell.textLabel?.textAlignment = .center
+            cell.textLabel?.textColor = .gray
+            return cell
+        } else {
+            // Return a cell containing the album title, artist and artwork
+            let cell = tableView.dequeueReusableCell(withIdentifier: "album") ?? UITableViewCell(style: UITableViewCell.CellStyle.subtitle, reuseIdentifier: "album")
+            if theOtherAlbumsByYear[indexPath.section].value[indexPath.row].items.count > 0 {
+                cell.textLabel?.text = theOtherAlbumsByYear[indexPath.section].value[indexPath.row].items[0].albumTitle ?? "Title"
+                cell.detailTextLabel?.text = theOtherAlbumsByYear[indexPath.section].value[indexPath.row].items[0].albumArtist ?? "Artist"
+                cell.detailTextLabel?.textColor = .gray
+                cell.imageView?.image = theOtherAlbumsByYear[indexPath.section].value[indexPath.row].items[0].artwork?.image(at: CGSize(width: 44, height: 44))
+            }
+            return cell
         }
-        return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
     {
-        musicPlayer.setQueue(with: theOtherAlbumsByYear[indexPath.section].value[indexPath.row])
-        musicPlayer.play()
+        // If the selected row is not a summary
+        if theOtherAlbumsByYear[indexPath.section].value.count != indexPath.row {
+            musicPlayer.setQueue(with: theOtherAlbumsByYear[indexPath.section].value[indexPath.row])
+            musicPlayer.play()
+        }
     }
     
     func refreshLibrary() {
