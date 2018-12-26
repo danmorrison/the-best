@@ -58,6 +58,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         if theOtherAlbumsByYear[indexPath.section].value.count != indexPath.row {
             musicPlayer.setQueue(with: theOtherAlbumsByYear[indexPath.section].value[indexPath.row])
             musicPlayer.play()
+            if UIApplication.shared.canOpenURL(URL(string: "music://")!) {
+                UIApplication.shared.open(URL(string: "music://")!)
+            }
         }
     }
     
