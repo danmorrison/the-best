@@ -15,7 +15,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     var myBestAlbums = Set<UInt64>()
     var theOtherAlbumsByYear = [(key: Int, value: [MPMediaItemCollection])]()
     let musicPlayer = MPMusicPlayerController.systemMusicPlayer
-    
+    let refreshControl = UIRefreshControl()
+
     @IBOutlet weak var albumTable: UITableView!
     
     func numberOfSections(in tableView: UITableView) -> Int{
@@ -84,9 +85,18 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         theOtherAlbumsByYear = theOtherAlbums.sorted(by: { $0.0 > $1.0 })
     }
 
+    @objc func refresh() {
+        refreshLibrary()
+        albumTable.reloadData()
+        refreshControl.endRefreshing()
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+
+        refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
+        albumTable.refreshControl = refreshControl
         
         albumTable.delegate = self
         albumTable.dataSource = self
