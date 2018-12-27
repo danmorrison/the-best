@@ -10,56 +10,55 @@ import UIKit
 import MediaPlayer
 
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
-    var library = MPMediaQuery()
-    let calendar = Calendar.current
-    var myBestAlbums = Set<UInt64>()
-    var theOtherAlbumsByYear = [(key: Int, value: [MPMediaItemCollection])]()
-    let musicPlayer = MPMusicPlayerController.systemMusicPlayer
+    var library = [(key: Int, value: [MPMediaItemCollection])]()
     let refreshControl = UIRefreshControl()
 
     @IBOutlet weak var albumTable: UITableView!
     
     func numberOfSections(in tableView: UITableView) -> Int{
-        return theOtherAlbumsByYear.count
+        return library.count
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return theOtherAlbumsByYear[section].value.count
+        return library[section].value.count
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        let count = theOtherAlbumsByYear[section].value.count
+        let count = library[section].value.count
         if count == 1 {
-            return String(theOtherAlbumsByYear[section].key) + "        " + String(count) + " album"
+            return String(library[section].key) + "        " + String(count) + " album"
         } else {
-            return String(theOtherAlbumsByYear[section].key) + "        " + String(count) + " albums"
+            return String(library[section].key) + "        " + String(count) + " albums"
         }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "album") ?? UITableViewCell(style: UITableViewCell.CellStyle.subtitle, reuseIdentifier: "album")
-        if theOtherAlbumsByYear[indexPath.section].value[indexPath.row].items.count > 0 {
-            cell.textLabel?.text = theOtherAlbumsByYear[indexPath.section].value[indexPath.row].items[0].albumTitle ?? "Title"
-            cell.detailTextLabel?.text = theOtherAlbumsByYear[indexPath.section].value[indexPath.row].items[0].albumArtist ?? "Artist"
+        if library[indexPath.section].value[indexPath.row].items.count > 0 {
+            cell.textLabel?.text = library[indexPath.section].value[indexPath.row].items[0].albumTitle ?? "Title"
+            cell.detailTextLabel?.text = library[indexPath.section].value[indexPath.row].items[0].albumArtist ?? "Artist"
             cell.detailTextLabel?.textColor = .gray
-            cell.imageView?.image = theOtherAlbumsByYear[indexPath.section].value[indexPath.row].items[0].artwork?.image(at: CGSize(width: 44, height: 44))
+            cell.imageView?.image = library[indexPath.section].value[indexPath.row].items[0].artwork?.image(at: CGSize(width: 44, height: 44))
         }
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
     {
-        musicPlayer.setQueue(with: theOtherAlbumsByYear[indexPath.section].value[indexPath.row])
-        musicPlayer.play()
+        MPMusicPlayerController.systemMusicPlayer.setQueue(with: library[indexPath.section].value[indexPath.row])
+        MPMusicPlayerController.systemMusicPlayer.play()
         if UIApplication.shared.canOpenURL(URL(string: "music://")!) {
             UIApplication.shared.open(URL(string: "music://")!)
         }
     }
     
     func refreshLibrary() {
+        var query = MPMediaQuery()
+        var myBestAlbums = Set<UInt64>()
+
         // Which albums are the best?
-        library = MPMediaQuery.playlists()
-        for playlist in library.collections! {
+        query = MPMediaQuery.playlists()
+        for playlist in query.collections! {
             if (playlist.value(forProperty: MPMediaPlaylistPropertyName) as! String).range(of: "^The Best ", options: .regularExpression) != nil {
                 for song in playlist.items {
                     myBestAlbums.insert(song.albumPersistentID)
@@ -68,12 +67,12 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
 
         // Which albums aren't the best?
-        library = MPMediaQuery.albums()
+        query = MPMediaQuery.albums()
         var theOtherAlbums = Dictionary<Int, [MPMediaItemCollection]>()
-        for album in library.collections! {
+        for album in query.collections! {
             if !myBestAlbums.contains(album.items[0].albumPersistentID) {
                 if album.items[0].releaseDate != nil {
-                    let year = calendar.component(.year, from: album.items[0].releaseDate!)
+                    let year = Calendar.current.component(.year, from: album.items[0].releaseDate!)
                     if !theOtherAlbums.keys.contains(year) {
                         theOtherAlbums[year] = []
                     }
@@ -82,7 +81,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             }
         }
 
-        theOtherAlbumsByYear = theOtherAlbums.sorted(by: { $0.0 > $1.0 })
+        library = theOtherAlbums.sorted(by: { $0.0 > $1.0 })
     }
 
     @objc func refresh() {
